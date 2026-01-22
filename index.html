@@ -54,6 +54,9 @@
         .foundation-footer { background: var(--primary-dark); color: white; padding: 40px 20px; border-radius: 30px 30px 0 0; margin-top: 50px; }
         .welcome-banner { text-align: center; font-size: 1.3rem; font-weight: 900; color: #a7f3d0; margin-bottom: 30px; animation: fadeWelcome 4s infinite ease-in-out; }
 
+        /* Powered By Footer */
+        .powered-by { text-align: center; padding: 20px 0; font-size: 0.7rem; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; font-weight: 800; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 30px; }
+
         .fab { position: fixed; bottom: 30px; right: 20px; width: 60px; height: 60px; background: var(--text); color: white; border-radius: 50%; border: none; font-size: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); z-index: 99; }
         .form-control { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #f1f5f9; border-radius: 12px; box-sizing: border-box; }
     </style>
@@ -64,7 +67,7 @@
         <div class="animate-up" style="background: white; padding: 40px; border-radius: 30px; width: 85%; max-width: 360px; text-align: center;">
             <img src="https://i.postimg.cc/W4dNF0N4/Mitua_Logo.jpg" style="height: 80px; border-radius: 15px; margin-bottom: 15px;">
             <h2 style="margin:0; color: var(--primary-dark); font-weight: 900;">MITUA CBO</h2>
-            <p style="color: var(--gray); font-size: 0.8rem; margin-bottom: 25px;">Management & Projects Portal</p>
+            <p style="color: var(--gray); font-size: 0.8rem; margin-bottom: 25px;">Strategic Management Portal</p>
             <input type="text" id="loginName" class="form-control" placeholder="Full Name">
             <input type="password" id="loginPass" class="form-control" placeholder="Password">
             <button onclick="handleLogin()" style="background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: 800;">LOGIN</button>
@@ -122,7 +125,7 @@
             </div>
 
             <div class="foundation-footer">
-                <div class="welcome-banner">Welcome to Mitua CBO</div>
+                <div class="welcome-banner">Welcome to Mitua Massive Family CBO</div>
                 
                 <div style="margin-bottom: 25px;">
                     <h4 style="color: #a7f3d0; margin-bottom: 5px; font-size: 0.7rem; letter-spacing: 1px;">OUR VISION</h4>
@@ -134,10 +137,12 @@
                     <div class="ticker-content" id="projectTicker">Connecting to Mitua CBO Servers...</div>
                 </div>
 
-                <div style="margin-top: 30px; font-size: 0.75rem; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px;">
+                <div style="margin-top: 30px; font-size: 0.75rem; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
                     <strong>PAYBILL:</strong> 123456 | <strong>ACC:</strong> MITUA<br>
-                    <strong>CONTACT:</strong> +254 712 345 678
+                    <strong>CONTACT:</strong> +254 710234326
                 </div>
+
+                <div class="powered-by">Powered by SOMATEXT TECHNOLOGIES</div>
             </div>
         </div>
 
@@ -156,7 +161,7 @@
     </div>
 
     <script>
-        // CONFIG
+        // FIREBASE INITIALIZATION
         const firebaseConfig = { apiKey: "AIzaSyDOwV2LyxvZlUSpqiqBFsTAO5CVTSBI940", authDomain: "mitua-cbo.firebaseapp.com", projectId: "mitua-cbo", storageBucket: "mitua-cbo.appspot.com", messagingSenderId: "1027796270356", appId: "1:1027796270356:web:d7bb6dd472bc8038129601" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -164,7 +169,7 @@
 
         let currentUser = { role: 'guest', name: 'Visitor', pos: 'Public' };
 
-        // LOGIN LOGIC
+        // AUTH
         async function handleLogin() {
             const name = document.getElementById('loginName').value.trim();
             const pass = document.getElementById('loginPass').value.trim();
@@ -197,50 +202,32 @@
             document.getElementById('tab-'+t).classList.add('active');
         }
 
-        // SYNC DATA
+        // REAL-TIME DATA SYNC
         function syncData() {
-            // News
             db.collection('news').orderBy('ts', 'desc').onSnapshot(snap => {
                 let html = '';
-                snap.forEach(doc => {
-                    const n = doc.data();
-                    html += `<div class="card news-card"><strong>${n.t}</strong><p style="font-size:0.8rem; margin:5px 0;">${n.c}</p><small style="color:var(--gray)">${new Date(n.ts).toLocaleDateString()}</small></div>`;
-                });
+                snap.forEach(doc => { const n = doc.data(); html += `<div class="card news-card"><strong>${n.t}</strong><p style="font-size:0.8rem; margin:5px 0;">${n.c}</p><small style="color:var(--gray)">${new Date(n.ts).toLocaleDateString()}</small></div>`; });
                 document.getElementById('newsList').innerHTML = html || 'No news yet.';
             });
 
-            // Treasury
             db.collection('treasury').orderBy('ts', 'desc').onSnapshot(snap => {
                 let bal = 0; let html = '';
-                snap.forEach(doc => {
-                    const t = doc.data(); bal += Number(t.amt);
-                    html += `<div class="card flex justify-between"><div><strong>Ksh ${t.amt}</strong><br><small>${t.m}</small></div><div style="font-size:0.7rem; color:var(--primary)">${new Date(t.ts).toLocaleDateString()}</div></div>`;
-                });
+                snap.forEach(doc => { const t = doc.data(); bal += Number(t.amt); html += `<div class="card flex justify-between"><div><strong>Ksh ${t.amt}</strong><br><small>${t.m}</small></div><div style="font-size:0.7rem; color:var(--primary)">${new Date(t.ts).toLocaleDateString()}</div></div>`; });
                 document.getElementById('totalBalance').innerText = `Ksh ${bal.toLocaleString()}`;
                 document.getElementById('transList').innerHTML = html;
             });
 
-            // Members
             db.collection('members').onSnapshot(snap => {
                 let html = '';
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    html += `<div class="card flex justify-between"><div><strong>${m.n}</strong><br><small>${m.pos}</small></div><div style="text-align:right"><small>${currentUser.role === 'admin' ? m.ph : '***'}</small></div></div>`;
-                });
+                snap.forEach(doc => { const m = doc.data(); html += `<div class="card flex justify-between"><div><strong>${m.n}</strong><br><small>${m.pos}</small></div><div style="text-align:right"><small>${currentUser.role === 'admin' ? m.ph : '***'}</small></div></div>`; });
                 document.getElementById('memberList').innerHTML = html;
             });
 
-            // Projects & Ticker
             db.collection('projects').onSnapshot(snap => {
                 let html = ''; let tick = '';
                 snap.forEach(doc => {
                     const p = doc.data(); const pct = Math.round((p.r/p.g)*100) || 0;
-                    html += `<div class="card">
-                        ${p.img ? `<img src="${p.img}" style="width:100%; height:150px; object-fit:cover; border-radius:12px; margin-bottom:10px;">` : ''}
-                        <h3>${p.n}</h3><div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
-                        <div class="flex justify-between" style="font-size:0.8rem; font-weight:800;"><span>${p.r} Raised</span><span>Goal: ${p.g}</span></div>
-                        ${currentUser.role === 'admin' ? '' : p.img ? `<a href="${p.img}" download style="display:block; margin-top:10px; font-size:0.7rem; color:var(--primary);">Download Photo</a>` : ''}
-                    </div>`;
+                    html += `<div class="card">${p.img ? `<img src="${p.img}" style="width:100%; height:150px; object-fit:cover; border-radius:12px; margin-bottom:10px;">` : ''}<h3>${p.n}</h3><div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div><div class="flex justify-between" style="font-size:0.8rem; font-weight:800;"><span>${p.r} Raised</span><span>Goal: ${p.g}</span></div></div>`;
                     tick += `<span style="margin-right:40px;">${p.n.toUpperCase()}: ${pct}% COMPLETE</span>`;
                 });
                 document.getElementById('projectList').innerHTML = html;
@@ -248,12 +235,11 @@
             });
         }
 
-        // ADMIN MODAL LOGIC
+        // ADMIN FUNCTIONS
         function openAdminModal() {
             const tab = document.querySelector('.tab-btn.active').id;
             const body = document.getElementById('modalBody');
             document.getElementById('adminModal').classList.remove('hidden');
-            
             if(tab === 'tab-news') {
                 body.innerHTML = `<input id="n_t" class="form-control" placeholder="Title"><textarea id="n_c" class="form-control" placeholder="Content"></textarea>`;
                 document.getElementById('saveBtn').onclick = () => db.collection('news').add({ t: document.getElementById('n_t').value, c: document.getElementById('n_c').value, ts: Date.now() }).then(closeModal);
@@ -261,38 +247,26 @@
                 body.innerHTML = `<input id="t_m" class="form-control" placeholder="Member Name"><input id="t_a" type="number" class="form-control" placeholder="Amount">`;
                 document.getElementById('saveBtn').onclick = () => db.collection('treasury').add({ m: document.getElementById('t_m').value, amt: document.getElementById('t_a').value, ts: Date.now() }).then(closeModal);
             } else if(tab === 'tab-members') {
-                body.innerHTML = `<input id="m_n" class="form-control" placeholder="Name"><input id="m_p" class="form-control" placeholder="Position"><input id="m_ph" class="form-control" placeholder="Phone Number"><input id="m_i" class="form-control" placeholder="ID Number">`;
+                body.innerHTML = `<input id="m_n" class="form-control" placeholder="Name"><input id="m_p" class="form-control" placeholder="Position"><input id="m_ph" class="form-control" placeholder="Phone"><input id="m_i" class="form-control" placeholder="ID Number">`;
                 document.getElementById('saveBtn').onclick = () => db.collection('members').add({ n: document.getElementById('m_n').value, pos: document.getElementById('m_p').value, ph: document.getElementById('m_ph').value, i: document.getElementById('m_i').value, p: '2025', isAdmin: false }).then(closeModal);
             } else {
-                body.innerHTML = `<input id="p_n" class="form-control" placeholder="Project Name"><textarea id="p_d" class="form-control" placeholder="Desc"></textarea><input id="p_g" type="number" class="form-control" placeholder="Goal"><input type="file" id="p_i" class="form-control">`;
+                body.innerHTML = `<input id="p_n" class="form-control" placeholder="Project Name"><input id="p_g" type="number" class="form-control" placeholder="Goal"><input type="file" id="p_i" class="form-control">`;
                 document.getElementById('saveBtn').onclick = async () => {
                     const file = document.getElementById('p_i').files[0]; let url = "";
-                    if(file) { const ref = storage.ref('projects/'+Date.now()+'_'+file.name); await ref.put(file); url = await ref.getDownloadURL(); }
-                    await db.collection('projects').add({ n: document.getElementById('p_n').value, desc: document.getElementById('p_d').value, g: document.getElementById('p_g').value, r: 0, img: url, ts: Date.now() });
+                    if(file) { const ref = storage.ref('p/'+Date.now()); await ref.put(file); url = await ref.getDownloadURL(); }
+                    await db.collection('projects').add({ n: document.getElementById('p_n').value, g: document.getElementById('p_g').value, r: 0, img: url, ts: Date.now() });
                     closeModal();
                 };
             }
         }
 
-        // EXPORT LOGIC
         async function exportData(col) {
             const snap = await db.collection(col).get();
             let csv = "data:text/csv;charset=utf-8,";
-            if(col === 'members') {
-                csv += "Name,Position,Phone,ID\n";
-                snap.forEach(d => { const x = d.data(); csv += `${x.n},${x.pos},${x.ph},${x.i}\n`; });
-            } else if(col === 'treasury') {
-                csv += "Date,Member,Amount\n";
-                snap.forEach(d => { const x = d.data(); csv += `${new Date(x.ts).toLocaleDateString()},${x.m},${x.amt}\n`; });
-            } else {
-                csv += "Project,Goal,Raised\n";
-                snap.forEach(d => { const x = d.data(); csv += `${x.n},${x.g},${x.r}\n`; });
-            }
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csv));
-            link.setAttribute("download", `Mitua_${col}_Report.csv`);
-            document.body.appendChild(link);
-            link.click();
+            if(col === 'members') { csv += "Name,Position,Phone,ID\n"; snap.forEach(d => { const x = d.data(); csv += `${x.n},${x.pos},${x.ph},${x.i}\n`; }); }
+            else if(col === 'treasury') { csv += "Date,Member,Amount\n"; snap.forEach(d => { const x = d.data(); csv += `${new Date(x.ts).toLocaleDateString()},${x.m},${x.amt}\n`; }); }
+            else { csv += "Project,Goal,Raised\n"; snap.forEach(d => { const x = d.data(); csv += `${x.n},${x.g},${x.r}\n`; }); }
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", `Mitua_${col}.csv`); document.body.appendChild(link); link.click();
         }
 
         function closeModal() { document.getElementById('adminModal').classList.add('hidden'); }
