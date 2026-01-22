@@ -3,219 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mitua CBO Portal</title>
+    <title>Mitua CBO Master Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --primary: #1b5e20; --secondary: #2e7d32; --light: #f4f7f6; --danger: #d32f2f; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--light); color: #333; }
+        :root { --primary: #1b5e20; --secondary: #2e7d32; --light: #f4f7f6; --danger: #d32f2f; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--light); color: #333; }
         
-        /* LOGIN STYLING */
-        #loginPage { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80'); background-size: cover; }
-        .login-card { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; }
-        .btn-main { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* LOGIN SCREEN */
+        #loginPage { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80'); background-size: cover; background-position: center; }
+        .login-card { background: var(--white); padding: 40px 30px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .login-card h2 { color: var(--primary); margin-bottom: 5px; }
+        input { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        .btn-login:hover { background: var(--secondary); }
 
-        /* DASHBOARD STYLING */
+        /* DASHBOARD SCREEN */
         #dashboard { display: none; }
-        .header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; sticky; top:0; z-index:100; }
-        .tabs { display: flex; background: var(--secondary); sticky; top: 50px; }
-        .t-btn { flex: 1; padding: 15px; border: none; background: none; color: white; font-weight: bold; opacity: 0.7; }
-        .t-btn.active { opacity: 1; border-bottom: 4px solid white; }
-        .container { padding: 15px; max-width: 800px; margin: auto; }
-        .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; border-left: 5px solid var(--primary); }
-        .progress-bg { background: #eee; height: 10px; border-radius: 5px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { background: var(--secondary); height: 100%; }
-        .del-btn { color: var(--danger); background: none; border: none; font-size: 20px; cursor: pointer; }
-        .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; border: none; font-size: 30px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .nav-bar { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab-bar { display: flex; background: var(--secondary); position: sticky; top: 56px; z-index: 999; }
+        .tab-item { flex: 1; padding: 15px; text-align: center; color: white; cursor: pointer; font-weight: bold; opacity: 0.7; transition: 0.3s; border-bottom: 4px solid transparent; }
+        .tab-item.active { opacity: 1; border-bottom: 4px solid white; }
         
-        #chart-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .content { padding: 20px; max-width: 900px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; border-left: 6px solid var(--primary); }
+        .card h4 { margin: 0 0 10px 0; color: var(--primary); }
+        
+        /* PROGRESS BAR */
+        .prog-container { background: #eee; height: 12px; border-radius: 6px; margin: 15px 0 5px; overflow: hidden; }
+        .prog-bar { height: 100%; background: var(--secondary); border-radius: 6px; transition: width 0.5s ease-in-out; }
+        
+        /* ADMIN TOOLS */
+        .del-btn { color: var(--danger); background: none; border: none; font-size: 22px; cursor: pointer; position: absolute; top: 15px; right: 15px; }
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; border: none; font-size: 35px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; cursor: pointer; z-index: 1001; }
+        
+        #chart-box { background: white; padding: 20px; border-radius: 15px; margin-bottom: 25px; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="loginPage">
         <div class="login-card">
-            <h2 style="color: var(--primary); margin-top:0;">MITUA MASSIVE FAMILY CBO</h2>
-            <p>Transparency & Tracking Portal</p>
-            <input type="text" id="loginUser" placeholder="Enter Your Full Name">
-            <input type="password" id="loginPass" placeholder="Password">
-            <button class="btn-main" onclick="handleLogin()">LOGIN</button>
-            <p style="font-size: 12px; color: #666; margin-top:15px;">Default password for members: <b>2025</b></p>
+            <h2>MITUA CBO</h2>
+            <p style="color: #666; margin-bottom: 20px;">Secure Management Portal</p>
+            <input type="text" id="userIn" placeholder="Enter Registered Name">
+            <input type="password" id="passIn" placeholder="Password">
+            <button class="btn-login" onclick="secureLogin()">ENTER PORTAL</button>
+            <p id="errorMsg" style="color: red; font-size: 13px; margin-top: 10px; display: none;">Access Denied</p>
         </div>
     </div>
 
     <div id="dashboard">
-        <div class="header">
-            <div><b id="displayUser">User</b> <span id="displayRole" style="font-size:10px; opacity:0.8;"></span></div>
-            <button onclick="logout()" style="background:none; border:1px solid white; color:white; border-radius:5px; padding:4px 8px;">Logout</button>
+        <div class="nav-bar">
+            <span><b>Mitua CBO</b> | <span id="helloUser">User</span></span>
+            <button onclick="logout()" style="background:transparent; border:1px solid white; color:white; border-radius:5px; padding:5px 10px; cursor:pointer;">Logout</button>
         </div>
         
-        <div class="tabs">
-            <button class="t-btn active" id="tabP" onclick="switchTab('proj')">PROJECTS</button>
-            <button class="t-btn" id="tabM" onclick="switchTab('mem')">MEMBERS</button>
-            <button class="t-btn" id="tabT" onclick="switchTab('tre')">TREASURY</button>
+        <div class="tab-bar">
+            <div class="tab-item active" id="tP" onclick="openTab('projects')">PROJECTS</div>
+            <div class="tab-item" id="tM" onclick="openTab('members')">MEMBERS</div>
+            <div class="tab-item" id="tF" onclick="openTab('finance')">TREASURY</div>
         </div>
 
-        <div class="container">
-            <div id="projView">
-                <div id="chart-container"><canvas id="myChart"></canvas></div>
-                <div id="listProjects"></div>
-            </div>
-            
-            <div id="memView" style="display:none;">
-                <button onclick="changePassword()" style="width:100%; margin-bottom:15px; padding:10px; border-radius:5px; border:1px solid var(--primary);">Set My Private Password</button>
-                <div id="listMembers"></div>
+        <div class="content">
+            <div id="viewProjects">
+                <div id="chart-box"><canvas id="mainChart"></canvas></div>
+                <div id="projectList"></div>
             </div>
 
-            <div id="treView" style="display:none;">
-                <div id="listTreasury"></div>
+            <div id="viewMembers" style="display:none;">
+                <div style="background:white; padding:15px; border-radius:10px; margin-bottom:15px; border:1px dashed var(--primary);">
+                    <p style="margin:0; font-size:14px;">Want a private password? Log in and click:</p>
+                    <button onclick="updateMyPassword()" style="margin-top:10px; background:var(--secondary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Set Private Password</button>
+                </div>
+                <div id="memberList"></div>
+            </div>
+
+            <div id="viewFinance" style="display:none;">
+                <div id="financeList"></div>
             </div>
         </div>
 
-        <button class="fab" id="adminFab" onclick="addNewData()">+</button>
+        <button class="fab" id="addBtn" onclick="handleFabClick()">+</button>
     </div>
 
     <script>
-        // CONFIGURATION
+        // FIREBASE SETUP
         const firebaseConfig = { apiKey: "AIzaSyDOwV2LyxvZlUSpqiqBFsTAO5CVTSBI940", authDomain: "mitua-cbo.firebaseapp.com", projectId: "mitua-cbo", storageBucket: "mitua-cbo.firebasestorage.app", messagingSenderId: "1027796270356", appId: "1:1027796270356:web:d7bb6dd472bc8038129601" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let chartObj = null;
+        let myChart = null;
 
-        // LOGIN LOGIC
-        async function handleLogin() {
-            const user = document.getElementById('loginUser').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
+        // AUTHENTICATION LOGIC
+        async function secureLogin() {
+            const user = document.getElementById('userIn').value.trim();
+            const pass = document.getElementById('passIn').value.trim();
+            const error = document.getElementById('errorMsg');
 
-            if(user.toLowerCase() === "edward" && pass === "1234") {
-                launchDashboard(user, "admin", "admin_id");
+            if (user.toLowerCase() === "edward" && pass === "1234") {
+                startSession(user, "admin", "admin_id");
                 return;
             }
 
-            // Check Firebase for user and password
-            const q = await db.collection("members").where("n", "==", user).get();
-            if(!q.empty) {
-                const data = q.docs[0].data();
-                const correctPass = data.p || "2025";
-                if(pass === correctPass) {
-                    launchDashboard(user, "member", q.docs[0].id);
-                } else { alert("Wrong Password!"); }
-            } else { alert("Name not found in registry."); }
+            // WHITELIST CHECK: Check if the name exists in the database
+            try {
+                const query = await db.collection("members").where("n", "==", user).get();
+                if (query.empty) {
+                    error.innerText = "Access Denied: Name not in CBO Registry.";
+                    error.style.display = "block";
+                    return;
+                }
+
+                const doc = query.docs[0];
+                const data = doc.data();
+                const validPass = data.p || "2025"; // Default is 2025
+
+                if (pass === validPass) {
+                    startSession(user, "member", doc.id);
+                } else {
+                    error.innerText = "Incorrect Password.";
+                    error.style.display = "block";
+                }
+            } catch (e) { alert("Network Error. Check internet."); }
         }
 
-        function launchDashboard(name, role, id) {
-            localStorage.setItem("mName", name);
-            localStorage.setItem("mRole", role);
-            localStorage.setItem("mId", id);
-            
+        function startSession(name, role, id) {
+            localStorage.setItem("cboUser", name);
+            localStorage.setItem("cboRole", role);
+            localStorage.setItem("cboId", id);
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('displayUser').innerText = name;
-            document.getElementById('displayRole').innerText = `(${role.toUpperCase()})`;
-            
-            if(role === 'admin') document.getElementById('adminFab').style.display = 'block';
-            
-            startListeners();
+            document.getElementById('helloUser').innerText = name;
+            if(role === 'admin') document.getElementById('addBtn').style.display = 'block';
+            loadData();
         }
 
         function logout() { localStorage.clear(); location.reload(); }
 
-        // TABS
-        function switchTab(type) {
-            document.getElementById('projView').style.display = type==='proj'?'block':'none';
-            document.getElementById('memView').style.display = type==='mem'?'block':'none';
-            document.getElementById('treView').style.display = type==='tre'?'block':'none';
-            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-            if(type==='proj') document.getElementById('tabP').classList.add('active');
-            if(type==='mem') document.getElementById('tabM').classList.add('active');
-            if(type==='tre') document.getElementById('tabT').classList.add('active');
+        // NAVIGATION
+        function openTab(tab) {
+            document.getElementById('viewProjects').style.display = tab==='projects'?'block':'none';
+            document.getElementById('viewMembers').style.display = tab==='members'?'block':'none';
+            document.getElementById('viewFinance').style.display = tab==='finance'?'block':'none';
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            if(tab==='projects') document.getElementById('tP').classList.add('active');
+            if(tab==='members') document.getElementById('tM').classList.add('active');
+            if(tab==='finance') document.getElementById('tF').classList.add('active');
         }
 
-        // DATABASE LISTENERS
-        function startListeners() {
-            const role = localStorage.getItem("mRole");
+        // DATA LOADING
+        function loadData() {
+            const role = localStorage.getItem("cboRole");
 
-            // 1. Projects & Chart
-            db.collection("projects").onSnapshot(snap => {
-                let h = "", totalG = 0, totalR = 0;
+            // PROJECTS
+            db.collection("projects").orderBy("ts", "desc").onSnapshot(snap => {
+                let html = "", tG = 0, tR = 0;
                 snap.forEach(doc => {
                     const p = doc.data();
-                    const pct = Math.round((p.r/p.g)*100) || 0;
-                    totalG += p.g; totalR += p.r;
-                    h += `<div class="card">
-                        <div style="display:flex; justify-content:space-between;"><b>${p.n}</b>
-                        ${role==='admin'? `<button class="del-btn" onclick="deleteDoc('projects','${doc.id}')">🗑️</button>` : ''}</div>
-                        <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    const pct = Math.min(100, Math.round((p.r/p.g)*100)) || 0;
+                    tG += p.g; tR += p.r;
+                    html += `<div class="card">
+                        <h4>${p.n}</h4>
+                        ${role==='admin' ? `<button class="del-btn" onclick="removeItem('projects','${doc.id}')">🗑️</button>`:''}
+                        <div class="prog-container"><div class="prog-bar" style="width:${pct}%"></div></div>
                         <small>Ksh ${p.r.toLocaleString()} / ${p.g.toLocaleString()} (${pct}%)</small>
                     </div>`;
                 });
-                document.getElementById('listProjects').innerHTML = h;
-                updateChart(totalR, totalG - totalR);
+                document.getElementById('projectList').innerHTML = html;
+                drawChart(tR, (tG - tR));
             });
 
-            // 2. Members
-            db.collection("members").onSnapshot(snap => {
-                let h = "";
+            // MEMBERS
+            db.collection("members").orderBy("n", "asc").onSnapshot(snap => {
+                let html = "";
                 snap.forEach(doc => {
                     const m = doc.data();
-                    h += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <div><b>${m.n}</b><br><small>ID: ${m.i}</small></div>
-                        ${role==='admin'? `<button class="del-btn" onclick="deleteDoc('members','${doc.id}')">🗑️</button>` : ''}
+                    html += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div><b>${m.n}</b><br><small>Member ID: ${m.i}</small></div>
+                        ${role==='admin' ? `<button class="del-btn" onclick="removeItem('members','${doc.id}')">🗑️</button>`:''}
                     </div>`;
                 });
-                document.getElementById('listMembers').innerHTML = h;
+                document.getElementById('memberList').innerHTML = html;
             });
 
-            // 3. Treasury
-            db.collection("finance").onSnapshot(snap => {
-                let h = "";
+            // FINANCE
+            db.collection("finance").orderBy("ts", "desc").onSnapshot(snap => {
+                let html = "";
                 snap.forEach(doc => {
                     const f = doc.data();
-                    h += `<div class="card">
-                        <div style="display:flex; justify-content:space-between;"><b>${f.n}</b>
-                        ${role==='admin'? `<button class="del-btn" onclick="deleteDoc('finance','${doc.id}')">🗑️</button>` : ''}</div>
-                        Ksh ${f.a.toLocaleString()} - ${f.r}
+                    html += `<div class="card">
+                        <h4>Ksh ${f.a.toLocaleString()}</h4>
+                        ${role==='admin' ? `<button class="del-btn" onclick="removeItem('finance','${doc.id}')">🗑️</button>`:''}
+                        <p style="margin:0;">By: ${f.n} | Reason: ${f.r}</p>
                     </div>`;
                 });
-                document.getElementById('listTreasury').innerHTML = h;
+                document.getElementById('financeList').innerHTML = html;
             });
         }
 
-        // ACTIONS
-        function deleteDoc(col, id) { if(confirm("Confirm Delete?")) db.collection(col).doc(id).delete(); }
+        // DATABASE OPERATIONS
+        function removeItem(col, id) { if(confirm("Permanently delete this?")) db.collection(col).doc(id).delete(); }
 
-        function addNewData() {
-            const activeTab = document.querySelector('.t-btn.active').innerText;
-            if(activeTab === 'PROJECTS') {
-                let n=prompt("Project Name:"), g=prompt("Goal:"), r=prompt("Raised:");
+        function handleFabClick() {
+            const active = document.querySelector('.tab-item.active').innerText;
+            if(active === 'PROJECTS') {
+                let n=prompt("Project Title:"), g=prompt("Goal (Ksh):"), r=prompt("Current Raised (Ksh):");
                 if(n) db.collection("projects").add({n, g:Number(g), r:Number(r), ts:Date.now()});
-            } else if(activeTab === 'MEMBERS') {
-                let n=prompt("Full Name:"), i=prompt("ID No:");
+            } else if(active === 'MEMBERS') {
+                let n=prompt("Full Name:"), i=prompt("ID Number:");
                 if(n) db.collection("members").add({n, i, p:"2025", ts:Date.now()});
             } else {
-                let n=prompt("Name:"), a=prompt("Amount:"), r=prompt("Reason:");
+                let n=prompt("Payer/Recipient:"), a=prompt("Amount (Ksh):"), r=prompt("Description:");
                 if(n) db.collection("finance").add({n, a:Number(a), r, ts:Date.now()});
             }
         }
 
-        function changePassword() {
-            const newP = prompt("Enter your new private password:");
-            const id = localStorage.getItem("mId");
-            if(newP && id !== "admin_id") {
-                db.collection("members").doc(id).update({p: newP})
-                .then(() => alert("Success!"));
+        function updateMyPassword() {
+            const newP = prompt("Create your new secret password:");
+            const mid = localStorage.getItem("cboId");
+            if(newP && mid && mid !== 'admin_id') {
+                db.collection("members").doc(mid).update({p: newP}).then(() => alert("Password Updated!"));
             }
         }
 
-        function updateChart(r, rem) {
-            const ctx = document.getElementById('myChart').getContext('2d');
-            if(chartObj) chartObj.destroy();
-            chartObj = new Chart(ctx, {
+        function drawChart(r, rem) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: ['Raised', 'Remaining'], datasets: [{ data: [r, rem < 0 ? 0 : rem], backgroundColor: ['#1b5e20', '#eee'] }] },
-                options: { plugins: { legend: { position: 'bottom' } } }
+                data: { labels: ['Raised Total', 'Remaining Goal'], datasets: [{ data: [r, rem < 0 ? 0 : rem], backgroundColor: ['#1b5e20', '#e0e0e0'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
         }
     </script>
