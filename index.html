@@ -5,85 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mitua CBO Portal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f6; }
         #welcomeScreen { height: 100vh; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80'); background-size: cover; background-position: center; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
         #dashboard { display: none; }
-        .header-bar { background: #1b5e20; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .tabs { display: flex; background: #2e7d32; position: sticky; top: 0; z-index: 10; overflow-x: auto; }
-        .t-btn { flex: 1; min-width: 80px; background: none; border: none; color: white; padding: 15px 5px; font-weight: bold; opacity: 0.6; font-size: 10px; }
+        .header-bar { background: #1b5e20; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index:100; }
+        .tabs { display: flex; background: #2e7d32; position: sticky; top: 44px; z-index: 10; overflow-x: auto; }
+        .t-btn { flex: 1; min-width: 80px; background: none; border: none; color: white; padding: 15px 5px; font-weight: bold; opacity: 0.6; font-size: 11px; }
         .t-btn.active { opacity: 1; border-bottom: 3px solid white; }
         .container { padding: 15px; padding-bottom: 80px; }
-        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #2e7d32; }
+        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #2e7d32; position: relative; }
         .progress-bg { background: #e0e0e0; height: 12px; border-radius: 6px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { background: #2e7d32; height: 100%; border-radius: 6px; transition: width 0.5s ease-in-out; }
-        .chart-box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
-        .btn-welcome { width: 80%; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; }
-        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: #2e7d32; color: white; border-radius: 50%; border: none; font-size: 30px; z-index: 99; }
-        #loginModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; z-index: 1000; width: 85%; max-width: 400px; text-align: center; color: #333; }
+        .progress-fill { background: #2e7d32; height: 100%; transition: width 0.5s; }
+        .del-btn { position: absolute; top: 10px; right: 10px; color: #ff5252; background: none; border: none; font-size: 18px; cursor: pointer; }
+        .btn-welcome { width: 80%; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; }
+        .fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: #2e7d32; color: white; border-radius: 50%; border: none; font-size: 30px; z-index: 99; display: none; }
+        #loginModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; z-index: 1000; width: 85%; max-width: 400px; text-align: center; }
         #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; }
     </style>
 </head>
 <body>
     <div id="welcomeScreen">
         <h1>MITUA CBO</h1>
-        <p>Project & Finance Tracking Portal</p>
         <button class="btn-welcome" style="background:#2e7d32; color:white;" onclick="openLogin()">OFFICER LOGIN</button>
         <button class="btn-welcome" style="background:white; color:#2e7d32;" onclick="startApp('viewer')">GUEST VIEW</button>
     </div>
+
     <div id="dashboard">
-        <div class="header-bar"><span>Mitua CBO | <b id="roleName">GUEST</b></span><button onclick="location.reload()" style="background:red; border:none; color:white; padding:5px; border-radius:4px; font-size:10px;">LOGOUT</button></div>
+        <div class="header-bar"><span>Mitua CBO | <b id="roleName">GUEST</b></span><button onclick="location.reload()" style="background:red; border:none; color:white; padding:5px; border-radius:4px;">LOGOUT</button></div>
         <div class="tabs">
             <button class="t-btn active" id="bProj" onclick="showTab('proj')">PROJECTS</button>
             <button class="t-btn" id="bTre" onclick="showTab('tre')">TREASURY</button>
             <button class="t-btn" id="bMem" onclick="showTab('mem')">MEMBERS</button>
-            <button class="t-btn" id="bPort" onclick="showTab('port')">PORTFOLIO</button>
         </div>
         <div class="container">
-            <div id="projTab"><div class="chart-box"><h3>Overall Project Funding</h3><canvas id="mainPieChart"></canvas></div><div id="projList"></div></div>
-            <div id="treTab" style="display:none"><div class="banner"><h3>TOTAL FUNDS: <span id="total">KSH 0</span></h3></div><div id="treList"></div></div>
+            <div id="projTab"><div style="background:white; padding:15px; border-radius:8px; margin-bottom:15px;"><canvas id="mainPieChart"></canvas></div><div id="projList"></div></div>
+            <div id="treTab" style="display:none"><h3>Treasury</h3><div id="treList"></div></div>
             <div id="memTab" style="display:none"><h3 id="mCount">Members (0)</h3><div id="memList"></div></div>
-            <div id="portTab" style="display:none"><div class="card"><h3>Vision</h3><p>To empower the community through unity.</p></div></div>
         </div>
-        <button class="fab" id="fab" onclick="addItem()" style="display:none">+</button>
+        <button class="fab" id="fab" onclick="addItem()">+</button>
     </div>
+
     <div id="overlay" onclick="closeLogin()"></div>
-    <div id="loginModal"><h3>Officer Access</h3><input type="password" id="passInput" style="width:100%; padding:10px; margin:10px 0;" placeholder="Enter Code"><button onclick="verifyPass()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none;">UNLOCK</button></div>
+    <div id="loginModal">
+        <h3>Officer Access</h3>
+        <input type="password" id="passInput" style="width:100%; padding:10px; margin-bottom:10px;" placeholder="Code">
+        <button onclick="verifyPass()" style="width:100%; padding:10px; background:#2e7d32; color:white; border:none;">UNLOCK</button>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script>
         const config = { apiKey: "AIzaSyDOwV2LyxvZlUSpqiqBFsTAO5CVTSBI940", authDomain: "mitua-cbo.firebaseapp.com", projectId: "mitua-cbo", storageBucket: "mitua-cbo.firebasestorage.app", messagingSenderId: "1027796270356", appId: "1:1027796270356:web:d7bb6dd472bc8038129601" };
-        firebase.initializeApp(config); const db = firebase.firestore(); let userRole = 'viewer', myChart = null;
+        firebase.initializeApp(config); const db = firebase.firestore(); 
+        let userRole = 'viewer', myChart = null;
+
         function openLogin() { document.getElementById('overlay').style.display='block'; document.getElementById('loginModal').style.display='block'; }
         function closeLogin() { document.getElementById('overlay').style.display='none'; document.getElementById('loginModal').style.display='none'; }
-        function verifyPass() { const p = document.getElementById('passInput').value; if(p==='1234') startApp('admin'); else if(p==='5678') startApp('secretary'); else alert("Invalid Code"); }
-        function startApp(role) { userRole=role; closeLogin(); document.getElementById('welcomeScreen').style.display='none'; document.getElementById('dashboard').style.display='block'; document.getElementById('roleName').innerText=userRole.toUpperCase(); if(userRole!=='viewer') document.getElementById('fab').style.display='block'; initListeners(); }
+        function verifyPass() { const p = document.getElementById('passInput').value; if(p==='1234') startApp('admin'); else if(p==='5678') startApp('secretary'); else alert("Invalid"); }
         
+        function startApp(role) { 
+            userRole=role; closeLogin(); 
+            document.getElementById('welcomeScreen').style.display='none'; 
+            document.getElementById('dashboard').style.display='block'; 
+            document.getElementById('roleName').innerText=userRole.toUpperCase(); 
+            if(userRole !== 'viewer') document.getElementById('fab').style.display='block';
+            initListeners(); 
+        }
+
         function showTab(t) {
-            ['proj','tre','mem','port'].forEach(id => document.getElementById(id+'Tab').style.display = t==id?'block':'none');
+            ['proj','tre','mem'].forEach(id => document.getElementById(id+'Tab').style.display = t==id?'block':'none');
             document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('b' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
         }
 
-        function addItem() {
-            const cur = document.querySelector('.t-btn.active').id;
-            if(cur==='bProj') { let n=prompt("Project:"), g=prompt("Goal:"), r=prompt("Raised:"); if(n) db.collection("projects").add({n, g:Number(g), r:Number(r), ts:Date.now()}); }
-            else if(cur==='bMem') { let n=prompt("Name:"), i=prompt("ID:"); if(n) db.collection("members").add({n, i, ts:Date.now()}); }
-            else { let n=prompt("Payer:"), a=prompt("Amount:"), r=prompt("Reason:"); if(n && a) db.collection("finance").add({n, a:Number(a), r, d:new Date().toLocaleDateString(), ts:Date.now()}); }
-        }
+        function deleteItem(col, id) { if(confirm("Delete this entry?")) db.collection(col).doc(id).delete(); }
+
         function initListeners() {
+            // PROJECTS
             db.collection("projects").orderBy("ts", "desc").onSnapshot(s => {
                 let h = "", tG = 0, tR = 0;
-                s.forEach(doc => { const p=doc.data(); const per=Math.round((p.r/p.g)*100)||0; tG+=p.g; tR+=p.r; h+=`<div class="card"><b>${p.n}</b><div class="progress-bg"><div class="progress-fill" style="width:${per}%"></div></div><small>Raised: Ksh ${p.r.toLocaleString()} / ${p.g.toLocaleString()} (${per}%)</small></div>`; });
-                document.getElementById('projList').innerHTML = h; updatePieChart(tR, tG-tR);
+                s.forEach(doc => {
+                    const p = doc.data(); const per = Math.round((p.r/p.g)*100)||0;
+                    tG += p.g; tR += p.r;
+                    h += `<div class="card">
+                        ${userRole==='admin' ? `<button class="del-btn" onclick="deleteItem('projects','${doc.id}')">🗑️</button>` : ''}
+                        <b>${p.n}</b>
+                        <div class="progress-bg"><div class="progress-fill" style="width:${per}%"></div></div>
+                        <small>Raised: Ksh ${p.r.toLocaleString()} / ${p.g.toLocaleString()} (${per}%)</small>
+                    </div>`;
+                });
+                document.getElementById('projList').innerHTML = h;
+                updatePieChart(tR, tG-tR);
             });
-            db.collection("finance").onSnapshot(s => { let sum=0; s.forEach(doc => sum+=doc.data().a); document.getElementById('total').innerText="KSH "+sum.toLocaleString(); });
-            db.collection("members").onSnapshot(s => { document.getElementById('mCount').innerText="Members ("+s.size+")"; });
+
+            // MEMBERS
+            db.collection("members").orderBy("ts", "desc").onSnapshot(s => {
+                let h = "";
+                document.getElementById('mCount').innerText = `Members (${s.size})`;
+                s.forEach(doc => {
+                    const m = doc.data();
+                    h += `<div class="card">
+                        ${userRole==='admin' ? `<button class="del-btn" onclick="deleteItem('members','${doc.id}')">🗑️</button>` : ''}
+                        <div style="font-weight:bold; color:#1b5e20;">${m.n}</div>
+                        <div style="font-size:12px; color:#666;">ID/No: ${m.i}</div>
+                    </div>`;
+                });
+                document.getElementById('memList').innerHTML = h;
+            });
+
+            // TREASURY
+            db.collection("finance").orderBy("ts", "desc").onSnapshot(s => {
+                let h = "";
+                s.forEach(doc => {
+                    const f = doc.data();
+                    h += `<div class="card">
+                        ${userRole==='admin' ? `<button class="del-btn" onclick="deleteItem('finance','${doc.id}')">🗑️</button>` : ''}
+                        <b>${f.n}</b>: Ksh ${f.a.toLocaleString()}<br><small>${f.r} (${f.d})</small>
+                    </div>`;
+                });
+                document.getElementById('treList').innerHTML = h;
+            });
         }
-        function updatePieChart(r, rem) { const ctx=document.getElementById('mainPieChart').getContext('2d'); if(myChart) myChart.destroy(); myChart=new Chart(ctx,{type:'pie',data:{labels:['Raised','Remaining'],datasets:[{data:[r,rem>0?rem:0],backgroundColor:['#2e7d32','#e0e0e0']}]},options:{responsive:true}}); }
+
+        function addItem() {
+            const cur = document.querySelector('.t-btn.active').id;
+            if(cur==='bProj') {
+                let n=prompt("Project Name:"), g=prompt("Goal Amount:"), r=prompt("Current Raised:");
+                if(n) db.collection("projects").add({n, g:Number(g), r:Number(r), ts:Date.now()});
+            } else if(cur==='bMem') {
+                let n=prompt("Member Full Name:"), i=prompt("Member ID Number:");
+                if(n) db.collection("members").add({n, i, ts:Date.now()});
+            } else {
+                let n=prompt("Payer Name:"), a=prompt("Amount:"), r=prompt("Reason/Month:");
+                if(n) db.collection("finance").add({n, a:Number(a), r, d:new Date().toLocaleDateString(), ts:Date.now()});
+            }
+        }
+
+        function updatePieChart(r, rem) {
+            const ctx = document.getElementById('mainPieChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: ['Raised', 'Remaining'], datasets: [{ data: [r, rem > 0 ? rem : 0], backgroundColor: ['#2e7d32', '#e0e0e0'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
     </script>
 </body>
 </html>
