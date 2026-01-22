@@ -3,300 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mitua CBO | Enterprise Portal</title>
+    <title>Mitua CBO | Master Portal</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --primary: #059669; --primary-dark: #065f46; --accent: #10b981; --bg: #f0fdf4; --glass: rgba(255, 255, 255, 0.95); --text: #1f2937; --gray: #6b7280; --danger: #ef4444; --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        body { font-family: 'Inter', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+        :root { --primary: #059669; --primary-dark: #065f46; --bg: #f0fdf4; --text: #1f2937; --gray: #6b7280; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 50px; }
         .hidden { display: none !important; }
         .flex { display: flex; }
         .justify-between { justify-content: space-between; }
         .items-center { align-items: center; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid #e5e7eb; }
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-guest { background: #e5e7eb; color: var(--text); margin-top: 10px; width: 100%; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid #e5e7eb; overflow: hidden; }
+        .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
         
-        #loginPage { height: 100vh; background: linear-gradient(135deg, #065f46 0%, #047857 100%); display: flex; justify-content: center; align-items: center; }
-        .login-box { background: var(--glass); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
-        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
-
-        .navbar { background: white; padding: 10px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; padding-bottom: 100px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { background: white; border: 1px solid #e5e7eb; color: var(--gray); padding: 10px 20px; border-radius: 25px; white-space: nowrap; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-        .info-header { background: var(--primary-dark); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .prog-bg { background: #e5e7eb; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        .prog-fill { height: 100%; background: var(--primary); transition: width 1s; }
-        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--text); color: white; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        /* Layout */
+        .navbar { background: white; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .container { max-width: 800px; margin: auto; padding: 15px; }
         
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; width: 95%; max-width: 500px; padding: 25px; border-radius: 16px; max-height: 90vh; overflow-y: auto; }
-        .form-control { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        /* Navigation Tabs */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding: 5px 0; }
+        .tab-btn { background: #e5e7eb; border: none; padding: 10px 18px; border-radius: 20px; white-space: nowrap; cursor: pointer; font-size: 0.85rem; color: var(--gray); font-weight: 600; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        /* Progress Bars */
+        .prog-bg { background: #eee; height: 8px; border-radius: 4px; margin: 10px 0; }
+        .prog-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: 1s; }
+
+        /* Vision/Mission Box */
+        .bottom-info { background: var(--primary-dark); color: white; padding: 25px; border-radius: 15px; margin-top: 40px; }
+        
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--text); color: white; border-radius: 50%; border: none; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 99; }
+        .form-control { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        img.project-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="loginPage">
-        <div class="login-box">
-            <img src="https://i.postimg.cc/W4dNF0N4/Mitua_Logo.jpg" style="height: 80px; margin-bottom: 10px; border-radius: 10px;">
-            <h2 style="color: var(--primary-dark); margin:0;">MITUA CBO</h2>
-            <p style="color: var(--gray); font-size: 0.8rem; margin-bottom: 20px;">Secure Management Portal</p>
-            <input type="text" id="loginName" class="login-input" placeholder="Your Name">
-            <input type="password" id="loginPass" class="login-input" placeholder="Password">
-            <button class="btn btn-primary" style="width: 100%;" onclick="handleLogin()">LOGIN</button>
-            <div style="margin: 15px 0; color: #ccc; font-size: 0.8rem;">OR</div>
-            <button class="btn btn-guest" onclick="enterAsGuest()"><i class="fas fa-eye"></i> VISIT AS GUEST</button>
-            <p id="loginError" style="color: var(--danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
+    <div id="loginPage" style="height: 100vh; background: var(--primary-dark); display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 35px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center;">
+            <img src="https://i.postimg.cc/W4dNF0N4/Mitua_Logo.jpg" style="height: 70px; border-radius: 10px; margin-bottom: 10px;">
+            <h2 style="margin:0; color: var(--primary-dark);">MITUA CBO</h2>
+            <p style="color: var(--gray); font-size: 0.8rem; margin-bottom: 20px;">Management & Projects Portal</p>
+            <input type="text" id="loginName" class="form-control" placeholder="Your Name">
+            <input type="password" id="loginPass" class="form-control" placeholder="Password">
+            <button class="btn btn-primary" onclick="handleLogin()">LOG IN</button>
+            <button class="btn" style="background:none; color:var(--gray); margin-top:10px; font-size:0.8rem;" onclick="enterAsGuest()">Continue as Guest</button>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <div class="navbar flex justify-between items-center">
             <div class="flex items-center" style="gap: 10px;">
-                <img src="https://i.postimg.cc/W4dNF0N4/Mitua_Logo.jpg" style="height: 45px; width: 45px; object-fit: cover; border-radius: 5px;">
-                <div style="font-weight: 800; color: var(--primary-dark); line-height: 1;">MITUA CBO</div>
+                <img src="https://i.postimg.cc/W4dNF0N4/Mitua_Logo.jpg" style="height: 40px; border-radius: 5px;">
+                <span style="font-weight: 800; color: var(--primary-dark);">MITUA</span>
             </div>
-            <div class="flex items-center" style="gap: 12px; text-align: right;">
-                <div>
-                    <span id="userName" style="font-size: 0.85rem; font-weight: 700; display: block;">Guest</span>
-                    <span id="userPos" style="font-size: 0.65rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">Visitor</span>
-                </div>
-                <button onclick="logout()" style="border:none; background:none; color:var(--gray); cursor:pointer;"><i class="fas fa-sign-out-alt" style="font-size: 1.1rem;"></i></button>
+            <div style="text-align: right;">
+                <span id="userName" style="display:block; font-size:0.8rem; font-weight: 700;">Name</span>
+                <span id="userPos" style="font-size:0.6rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">Position</span>
             </div>
         </div>
 
         <div class="container">
-            <div class="info-header">
-                <div style="margin-bottom: 12px;">
-                    <small style="text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; font-size: 0.6rem; font-weight: 800;">Our Vision</small>
-                    <div style="font-size: 1rem; font-weight: 600;">To empower our community through sustainable growth and shared prosperity.</div>
-                </div>
-                <div>
-                    <small style="text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; font-size: 0.6rem; font-weight: 800;">Our Mission</small>
-                    <div style="font-size: 0.85rem;">Building capacity, supporting local projects, and fostering unity through transparency.</div>
-                </div>
-            </div>
-
             <div class="tabs">
-                <button class="tab-btn active" id="tab-projects" onclick="switchTab('projects')">PROJECTS</button>
+                <button class="tab-btn active" id="tab-treasury" onclick="switchTab('treasury')">TREASURY</button>
                 <button class="tab-btn" id="tab-members" onclick="switchTab('members')">MEMBERS</button>
-                <button class="tab-btn" id="tab-finance" onclick="switchTab('finance')">TREASURY</button>
+                <button class="tab-btn" id="tab-portfolio" onclick="switchTab('portfolio')">PORTFOLIO</button>
             </div>
 
-            <div id="view-projects" class="view-section">
-                <div class="card" style="background: #fffbeb; border: 1px solid #fcd34d;">
-                    <h4 style="margin:0 0 8px 0; color: #92400e; font-size: 0.9rem;"><i class="fas fa-hand-holding-heart"></i> SUPPORT US</h4>
-                    <p style="font-size: 0.8rem; margin: 4px 0;"><strong>Paybill:</strong> 123456 | <strong>Account:</strong> MITUA</p>
-                    <p style="font-size: 0.8rem; margin: 4px 0;"><strong>Contact:</strong> +254 712 345 678</p>
+            <div id="view-treasury" class="view-section">
+                <div class="card" style="background: var(--primary-dark); color: white; text-align: center;">
+                    <small>CURRENT CASH BALANCE</small>
+                    <h1 id="totalCash" style="margin: 5px 0;">Ksh 0</h1>
                 </div>
-                <div id="projectsList"></div>
+                <div id="transList"></div>
             </div>
 
             <div id="view-members" class="view-section hidden">
-                <div id="membersList"></div>
+                <div id="memberList"></div>
             </div>
 
-            <div id="view-finance" class="view-section hidden">
-                <p style="text-align: center; color: var(--gray); margin-top: 40px;">Treasury modules loading...</p>
+            <div id="view-portfolio" class="view-section hidden">
+                <div id="projectList"></div>
+
+                <div class="bottom-info">
+                    <h3 style="margin-top: 0; color: #a7f3d0;"><i class="fas fa-eye"></i> OUR VISION</h3>
+                    <p>To empower our community through sustainable growth and shared prosperity.</p>
+                    <hr style="opacity: 0.2;">
+                    <h3 style="color: #a7f3d0;"><i class="fas fa-rocket"></i> OUR MISSION</h3>
+                    <p>Building capacity, supporting local projects, and fostering unity through transparency.</p>
+                    <div style="margin-top: 20px; font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                        <strong>Support Us:</strong> Paybill 123456 | Acc: MITUA<br>
+                        <strong>Enquiries:</strong> +254 712 345 678
+                    </div>
+                </div>
             </div>
         </div>
 
-        <button id="fabBtn" class="fab hidden" onclick="openAddModal()"><i class="fas fa-plus"></i></button>
+        <button id="fabBtn" class="fab hidden" onclick="openModal()"><i class="fas fa-plus"></i></button>
     </div>
 
-    <div id="mainModal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3 id="modalTitle" style="margin-top: 0; color: var(--primary-dark);">Add New</h3>
+    <div id="mainModal" class="modal-overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:200; display:flex; align-items:center; justify-content:center;">
+        <div style="background:white; padding:25px; border-radius:15px; width:90%; max-width:450px;">
+            <h3 id="modalTitle" style="margin-top:0;">Record Data</h3>
             <div id="modalBody"></div>
-            <div style="text-align: right; margin-top: 20px;">
-                <button class="btn" style="color: var(--gray);" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-primary" id="modalActionBtn">Save Entry</button>
+            <div class="flex" style="gap:10px; margin-top:20px;">
+                <button class="btn" style="flex:1; background:#eee;" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn" style="flex:2;">Confirm Save</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- FIREBASE CONFIG ---
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDOwV2LyxvZlUSpqiqBFsTAO5CVTSBI940", 
-            authDomain: "mitua-cbo.firebaseapp.com", 
-            projectId: "mitua-cbo", 
-            storageBucket: "mitua-cbo.firebasestorage.app", 
-            messagingSenderId: "1027796270356", 
-            appId: "1:1027796270356:web:d7bb6dd472bc8038129601" 
-        };
+        // FIREBASE CONFIG
+        const firebaseConfig = { apiKey: "AIzaSyDOwV2LyxvZlUSpqiqBFsTAO5CVTSBI940", authDomain: "mitua-cbo.firebaseapp.com", projectId: "mitua-cbo", storageBucket: "mitua-cbo.appspot.com", messagingSenderId: "1027796270356", appId: "1:1027796270356:web:d7bb6dd472bc8038129601" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const storage = firebase.storage();
 
-        let currentUser = { role: 'guest' };
+        let currentUser = { role: 'guest', name: 'Guest', pos: 'Visitor' };
 
-        // --- AUTHENTICATION ---
+        // AUTH
         async function handleLogin() {
             const name = document.getElementById('loginName').value.trim();
             const pass = document.getElementById('loginPass').value.trim();
-            
-            try {
-                const snap = await db.collection('members').where('n', '==', name).get();
-                if (snap.empty || snap.docs[0].data().p !== pass) {
-                    throw new Error("Invalid name or password.");
-                }
-
-                const data = snap.docs[0].data();
-                currentUser = { 
-                    id: snap.docs[0].id, 
-                    name: data.n, 
-                    role: data.isAdmin ? 'admin' : 'member',
-                    position: data.pos || 'Member'
-                };
-                startSession();
-            } catch (err) {
-                const errBox = document.getElementById('loginError');
-                errBox.innerText = err.message;
-                errBox.style.display = 'block';
-            }
+            const snap = await db.collection('members').where('n', '==', name).get();
+            if(!snap.empty && snap.docs[0].data().p === pass) {
+                const d = snap.docs[0].data();
+                currentUser = { id: snap.docs[0].id, name: d.n, role: d.isAdmin ? 'admin' : 'member', pos: d.pos || 'Member' };
+                startApp();
+            } else { Swal.fire('Error', 'Wrong details', 'error'); }
         }
 
-        function enterAsGuest() {
-            currentUser = { role: 'guest', name: 'Guest Visitor', position: 'Public' };
-            startSession();
-        }
+        function enterAsGuest() { startApp(); }
 
-        function startSession() {
+        function startApp() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('userName').innerText = currentUser.name;
-            document.getElementById('userPos').innerText = currentUser.position;
-
-            if (currentUser.role === 'guest') {
-                document.getElementById('tab-members').classList.add('hidden');
-                document.getElementById('tab-finance').classList.add('hidden');
-            } else if (currentUser.role === 'admin') {
-                document.getElementById('fabBtn').classList.remove('hidden');
-                if(currentUser.position === 'Chairperson') {
-                    Swal.fire({ title: 'Habari, Chairperson!', text: 'The portal is under your control.', icon: 'success', timer: 2000 });
-                }
-            }
-            loadData();
+            document.getElementById('userPos').innerText = currentUser.pos;
+            if(currentUser.role === 'admin') document.getElementById('fabBtn').classList.remove('hidden');
+            if(currentUser.pos === 'Chairperson') Swal.fire('Habari Chairperson!', 'System Ready', 'success');
+            loadTreasury(); loadMembers(); loadProjects();
         }
 
-        function logout() { location.reload(); }
-
-        // --- UI & TABS ---
-        function switchTab(tab) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
-            document.getElementById(`view-${tab}`).classList.remove('hidden');
+        function switchTab(t) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('view-'+t).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById('tab-'+t).classList.add('active');
         }
 
-        // --- DATA LOADING ---
-        function loadData() {
-            // Projects
-            db.collection('projects').orderBy('ts', 'desc').onSnapshot(snap => {
-                const list = document.getElementById('projectsList');
+        // LOADERS
+        function loadTreasury() {
+            db.collection('treasury').orderBy('ts', 'desc').onSnapshot(snap => {
+                let total = 0;
+                const list = document.getElementById('transList');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const t = doc.data();
+                    total += Number(t.amt);
+                    list.innerHTML += `<div class="card flex justify-between">
+                        <div><strong>Ksh ${t.amt}</strong><br><small>${t.mName}</small></div>
+                        <div style="text-align:right; font-size:0.7rem; color:gray;">${new Date(t.ts).toLocaleDateString()}</div>
+                    </div>`;
+                });
+                document.getElementById('totalCash').innerText = `Ksh ${total.toLocaleString()}`;
+            });
+        }
+
+        function loadMembers() {
+            db.collection('members').onSnapshot(snap => {
+                const list = document.getElementById('memberList');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    list.innerHTML += `<div class="card flex justify-between">
+                        <div><strong>${m.n}</strong><br><small>${m.pos}</small></div>
+                        <div style="text-align:right; font-size:0.7rem;">ID: ${m.i}</div>
+                    </div>`;
+                });
+            });
+        }
+
+        function loadProjects() {
+            db.collection('projects').onSnapshot(snap => {
+                const list = document.getElementById('projectList');
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const p = doc.data();
-                    const pct = Math.min(100, Math.round((p.r/p.g)*100)) || 0;
-                    list.innerHTML += `
-                        <div class="card">
-                            <h3 style="margin:0; color:var(--primary-dark); font-size: 1.1rem;">${p.n}</h3>
-                            <p style="color:var(--gray); font-size:0.85rem; margin: 8px 0;">${p.desc || 'No description.'}</p>
-                            <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
-                            <div class="flex justify-between" style="font-weight:700; font-size:0.75rem">
-                                <span>RAISED: KSH ${Number(p.r).toLocaleString()}</span>
-                                <span style="color:var(--primary)">GOAL: KSH ${Number(p.g).toLocaleString()}</span>
-                            </div>
-                        </div>`;
+                    const pct = Math.round((p.r/p.g)*100);
+                    list.innerHTML += `<div class="card">
+                        ${p.img ? `<img src="${p.img}" class="project-img">` : ''}
+                        <h3>${p.n}</h3>
+                        <p style="font-size:0.8rem; color:gray;">${p.desc}</p>
+                        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
+                        <div class="flex justify-between" style="font-size:0.8rem; font-weight:700;">
+                            <span>Raised: ${p.r}</span><span>Goal: ${p.g}</span>
+                        </div>
+                    </div>`;
                 });
             });
-
-            // Members
-            if (currentUser.role !== 'guest') {
-                db.collection('members').onSnapshot(snap => {
-                    const list = document.getElementById('membersList');
-                    list.innerHTML = '';
-                    snap.forEach(doc => {
-                        const m = doc.data();
-                        list.innerHTML += `<div class="card flex justify-between items-center">
-                            <div>
-                                <strong style="font-size:0.95rem;">${m.n}</strong><br>
-                                <small style="color:var(--primary); font-weight:700;">${m.pos || 'Member'}</small>
-                            </div>
-                            <div style="text-align:right">
-                                <span style="font-size:0.7rem; color:var(--gray);"><i class="fas fa-phone"></i> ${m.phone || 'N/A'}</span><br>
-                                <span style="font-size:0.7rem; color:var(--gray);">ID: ${m.i}</span>
-                            </div>
-                        </div>`;
-                    });
-                });
-            }
         }
 
-        // --- ADDING DATA (ADMIN) ---
-        function openAddModal() {
+        // ADMIN ACTIONS
+        function openModal() {
+            const tab = document.querySelector('.tab-btn.active').id;
             const body = document.getElementById('modalBody');
-            const title = document.getElementById('modalTitle');
-            const activeTab = document.querySelector('.tab-btn.active').id;
             document.getElementById('mainModal').classList.remove('hidden');
             
-            if(activeTab === 'tab-projects') {
-                title.innerText = "New Project";
-                body.innerHTML = `
-                    <input id="p_name" class="form-control" placeholder="Project Name">
-                    <textarea id="p_desc" class="form-control" rows="3" placeholder="Description/Goal of this project"></textarea>
-                    <input id="p_goal" type="number" class="form-control" placeholder="Target Amount (Ksh)">
-                    <input id="p_raised" type="number" class="form-control" placeholder="Current Amount (Ksh)" value="0">
-                `;
-                document.getElementById('modalActionBtn').onclick = saveProject;
+            if(tab === 'tab-treasury') {
+                body.innerHTML = `<input id="f_name" class="form-control" placeholder="Member Name"><input id="f_amt" type="number" class="form-control" placeholder="Amount (Ksh)">`;
+                document.getElementById('saveBtn').onclick = saveTrans;
+            } else if(tab === 'tab-members') {
+                body.innerHTML = `<input id="m_n" class="form-control" placeholder="Name"><input id="m_pos" class="form-control" placeholder="Position"><input id="m_id" class="form-control" placeholder="ID No.">`;
+                document.getElementById('saveBtn').onclick = saveMem;
             } else {
-                title.innerText = "Register Member";
-                body.innerHTML = `
-                    <input id="m_name" class="form-control" placeholder="Full Name">
-                    <input id="m_pos" class="form-control" placeholder="Position (Chairperson, Secretary, etc)">
-                    <input id="m_phone" class="form-control" placeholder="Phone Number">
-                    <input id="m_id" class="form-control" placeholder="ID Number">
-                    <label style="font-size:0.85rem;"><input type="checkbox" id="m_admin"> Give Admin Rights</label>
-                `;
-                document.getElementById('modalActionBtn').onclick = saveMember;
+                body.innerHTML = `<input id="p_n" class="form-control" placeholder="Project Name"><textarea id="p_d" class="form-control" placeholder="Description"></textarea><input id="p_g" type="number" class="form-control" placeholder="Goal"><input type="file" id="p_i" class="form-control">`;
+                document.getElementById('saveBtn').onclick = saveProj;
             }
         }
 
-        async function saveProject() {
-            const n = document.getElementById('p_name').value;
-            const desc = document.getElementById('p_desc').value;
-            const g = Number(document.getElementById('p_goal').value);
-            const r = Number(document.getElementById('p_raised').value);
-            if(n && g) {
-                await db.collection('projects').add({ n, desc, g, r, ts: Date.now() });
-                Swal.fire('Success', 'Project added to portfolio', 'success');
-                closeModal();
-            }
+        async function saveTrans() {
+            await db.collection('treasury').add({ mName: document.getElementById('f_name').value, amt: document.getElementById('f_amt').value, ts: Date.now() });
+            closeModal();
         }
 
-        async function saveMember() {
-            const n = document.getElementById('m_name').value;
-            const pos = document.getElementById('m_pos').value;
-            const phone = document.getElementById('m_phone').value;
-            const i = document.getElementById('m_id').value;
-            const isAdmin = document.getElementById('m_admin').checked;
-            if(n && i) {
-                await db.collection('members').add({ n, pos, phone, i, isAdmin, p: '2025', ts: Date.now() });
-                Swal.fire('Member Added', 'Default Password: 2025', 'success');
-                closeModal();
+        async function saveMem() {
+            await db.collection('members').add({ n: document.getElementById('m_n').value, pos: document.getElementById('m_pos').value, i: document.getElementById('m_id').value, p: '2025', isAdmin: false });
+            closeModal();
+        }
+
+        async function saveProj() {
+            const file = document.getElementById('p_i').files[0];
+            let url = "";
+            if(file) {
+                const ref = storage.ref('projects/'+file.name);
+                await ref.put(file);
+                url = await ref.getDownloadURL();
             }
+            await db.collection('projects').add({ n: document.getElementById('p_n').value, desc: document.getElementById('p_d').value, g: document.getElementById('p_g').value, r: 0, img: url, ts: Date.now() });
+            closeModal();
         }
 
         function closeModal() { document.getElementById('mainModal').classList.add('hidden'); }
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
